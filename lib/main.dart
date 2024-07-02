@@ -7,7 +7,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
   
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -40,6 +39,12 @@ class _MyHomePageState extends State<MyHomePage> {
     });
   }
 
+  void readNotifs() {
+    setState(() {
+      notifsNum = 0;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
@@ -69,49 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       body: <Widget>[
-        /// Home page
-        Card(
-          shadowColor: Colors.transparent,
-          margin: const EdgeInsets.all(8.0),
-          child: InkWell(
-            onTap: () {
-              updateNotifications(0); 
-            },
-            child: SizedBox.expand(
-              child: Center(
-                child: Text(
-                  'Home page',
-                  style: theme.textTheme.titleLarge,
-                ),
-              ),
-            ),
-          ),
-        ),
-
-        /// Prayers page
-        const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Column(
-            children: <Widget>[
-              Card(
-                child: ListTile(
-                  leading: Icon(Icons.notifications_sharp),
-                  title: Text('Notification 1'),
-                  subtitle: Text('This is a notification'),
-                ),
-              ),
-              Card(
-                child: ListTile(
-                  leading: Icon(Icons.notifications_sharp),
-                  title: Text('Notification 2'),
-                  subtitle: Text('This is a notification'),
-                ),
-              ),
-            ],
-          ),
-        ),
-
-        /// Notifications page
+        // Notifications page
         ListView.builder(
           reverse: true,
           itemCount: 2,
@@ -153,6 +116,29 @@ class _MyHomePageState extends State<MyHomePage> {
           },
         ),
 
+        // Prayers page
+        const Padding(
+          padding: EdgeInsets.all(8.0),
+          child: Column(
+            children: <Widget>[
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.notifications_sharp),
+                  title: Text('Notification 1'),
+                  subtitle: Text('This is a notification'),
+                ),
+              ),
+              Card(
+                child: ListTile(
+                  leading: Icon(Icons.notifications_sharp),
+                  title: Text('Notification 2'),
+                  subtitle: Text('This is a notification'),
+                ),
+              ),
+            ],
+          ),
+        ),
+
         // Donate page
         const Padding(
           padding: EdgeInsets.all(8.0),
@@ -177,28 +163,41 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
 
         // More page
-        const Padding(
-          padding: EdgeInsets.all(8.0),
-          child: Column(
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: ListView(
             children: <Widget>[
-              Card(
-                child: ListTile(
-                  leading: Icon(Icons.notifications_sharp),
-                  title: Text('Notification 1'),
-                  subtitle: Text('This is a notification'),
-                ),
-              ),
-              Card(
-                child: ListTile(
-                  leading: Icon(Icons.notifications_sharp),
-                  title: Text('Notification 2'),
-                  subtitle: Text('This is a notification'),
-                ),
-              ),
+              buildCard(context, Icons.book, 'About Us', 'Learn more about Masjid At-Taqwa, our community, and how to contact us!'),
+              buildCard(context, Icons.favorite, 'ISGH Donations', 'Zakat, Fitra, Fidya, Cemetery Development, Funeral Services, and Job Networking'),
+              buildCard(context, Icons.groups, 'Social Services', 'Counseling, Marriage, Zakat, Funeral, and Medical Services Info'),
+              buildCard(context, Icons.volunteer_activism, 'Volunteer Sign-Up Form', 'Help with our community events, services, and charity!'),
+              buildCard(context, Icons.diversity_1, 'Marriage Form', 'Host and conduct your marriage ceremony with us'),
+              buildCard(context, Icons.restaurant, 'Food Service Form', 'We provide food for Marriage, Aqiqah, Graduation, and more'),
+              buildCard(context, Icons.share, 'Social Media', 'Join our Whatsapp group, FaceBook page, or Instagram'),
             ],
           ),
         ),
       ][currentPageIndex],
+    );
+  }
+
+  Widget buildCard(BuildContext context, IconData icon, String title, String subtitle) {
+    return Card(
+      child: InkWell(
+        onTap: () {
+          // Handle card tap
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Tapped on $title')));
+        },
+        child: MouseRegion(
+          onEnter: (event) => print('Hovering over $title'),
+          onExit: (event) => print('Stopped hovering over $title'),
+          child: ListTile(
+            leading: Icon(icon),
+            title: Text(title),
+            subtitle: Text(subtitle),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -235,3 +234,4 @@ class _HomeNavDestState extends State<HomeNavDest> {
     );
   }
 }
+
