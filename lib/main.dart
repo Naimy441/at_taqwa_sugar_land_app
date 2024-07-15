@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await NotificationSettings().init(); // Initialize shared preferences and default settings
   runApp(const MyApp());
 }
 
@@ -339,7 +343,10 @@ class MorePage extends StatelessWidget {
           buildCard(context, Icons.share, 'Social Media',
               'Join our Whatsapp group, FaceBook page, or Instagram',
               null),
-          buildCard(context, Icons.settings, 'Admin Login',
+          buildCard(context, Icons.settings, 'Settings',
+              'Manage Notifications',
+              null),
+          buildCard(context, Icons.shield_outlined, 'Admin Login',
               'One-time Use',
               null),
         ],
@@ -387,6 +394,12 @@ class MorePage extends StatelessWidget {
         Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => SocialMediaPage()),
+          );
+        break;
+      case 'Settings':
+        Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => SettingsPage()),
           );
         break;
       case 'Admin Login':
@@ -489,6 +502,265 @@ class SocialMediaPage extends StatelessWidget {
         throw 'Could not launch $url';
       }
     }
+}
+
+class NotificationSettings {
+  static final NotificationSettings _instance = NotificationSettings._internal();
+  factory NotificationSettings() => _instance;
+  NotificationSettings._internal();
+
+  static const List<String> categories = [
+    'Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha', 'Regular Updates', 'Important Updates'
+  ];
+
+  SharedPreferences? _prefs;
+
+  Future<void> init() async {
+    _prefs = await SharedPreferences.getInstance();
+    initializeDefaultSettings();
+  }
+
+  void saveSetting(String category, String option) {
+    _prefs?.setString(category, option);
+  }
+
+  String getSetting(String category) {
+    return _prefs?.getString(category) ?? 'Beep'; // Default to 'Beep'
+  }
+
+  void initializeDefaultSettings() {
+    for (String category in categories) {
+      if (!_prefs!.containsKey(category)) {
+        _prefs?.setString(category, 'Beep');
+      }
+    }
+  }
+}
+
+class NotificationSettingsBottomSheet extends StatefulWidget {
+  final String category;
+
+  NotificationSettingsBottomSheet({required this.category});
+
+  @override
+  _NotificationSettingsBottomSheetState createState() =>
+      _NotificationSettingsBottomSheetState();
+}
+
+class _NotificationSettingsBottomSheetState
+    extends State<NotificationSettingsBottomSheet> {
+  String? selectedOption;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedOption = NotificationSettings().getSetting(widget.category);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16.0),
+      height: MediaQuery.of(context).size.height * 0.7,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 10),
+          Text(
+            'Notification Settings for ${widget.category}',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(height: 20),
+          Expanded(
+            child: ListView(
+              children: getRadioListTiles(),
+            ),
+          ),
+          SizedBox(height: 20),
+          Center(
+            child: ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all<Color>(
+                    Colors.green.shade700),
+                padding: MaterialStateProperty.all<EdgeInsets>(
+                  EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                ),
+              ),
+              onPressed: () {
+                // Save the settings using shared preferences
+                NotificationSettings().saveSetting(widget.category, selectedOption!);
+                Navigator.pop(context);
+              },
+              child: Text(
+                'Save',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> getRadioListTiles() {
+    List<Widget> tiles = [];
+    if (widget.category == 'Regular Updates' || widget.category == 'Important Updates' || widget.category == 'Sunrise') {
+      tiles.addAll([
+        RadioListTile<String>(
+          title: const Text('Disable'),
+          value: 'Disable',
+          groupValue: selectedOption,
+          onChanged: (value) {
+            setState(() {
+              selectedOption = value;
+            });
+          },
+        ),
+        RadioListTile<String>(
+          title: const Text('Silence'),
+          value: 'Silence',
+          groupValue: selectedOption,
+          onChanged: (value) {
+            setState(() {
+              selectedOption = value;
+            });
+          },
+        ),
+        RadioListTile<String>(
+          title: const Text('Beep'),
+          value: 'Beep',
+          groupValue: selectedOption,
+          onChanged: (value) {
+            setState(() {
+              selectedOption = value;
+            });
+          },
+        ),
+      ]);
+    } else {
+      tiles.addAll([
+        RadioListTile<String>(
+          title: const Text('Disable'),
+          value: 'Disable',
+          groupValue: selectedOption,
+          onChanged: (value) {
+            setState(() {
+              selectedOption = value;
+            });
+          },
+        ),
+        RadioListTile<String>(
+          title: const Text('Silence'),
+          value: 'Silence',
+          groupValue: selectedOption,
+          onChanged: (value) {
+            setState(() {
+              selectedOption = value;
+            });
+          },
+        ),
+        RadioListTile<String>(
+          title: const Text('Beep'),
+          value: 'Beep',
+          groupValue: selectedOption,
+          onChanged: (value) {
+            setState(() {
+              selectedOption = value;
+            });
+          },
+        ),
+        RadioListTile<String>(
+          title: const Text('Athan'),
+          value: 'Athan',
+          groupValue: selectedOption,
+          onChanged: (value) {
+            setState(() {
+              selectedOption = value;
+            });
+          },
+        ),
+        RadioListTile<String>(
+          title: const Text('Full Athan'),
+          value: 'Full Athan',
+          groupValue: selectedOption,
+          onChanged: (value) {
+            setState(() {
+              selectedOption = value;
+            });
+          },
+        ),
+      ]);
+    }
+    return tiles;
+  }
+}
+
+class SettingsPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Settings'),
+      ),
+      body: Scrollbar(
+        child: ListView(
+          padding: EdgeInsets.all(16.0),
+          children: [
+            NotificationCategoryTile(
+              title: 'Prayer Times',
+              options: ['Fajr', 'Sunrise', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'],
+            ),
+            SizedBox(height: 20),
+            NotificationCategoryTile(
+              title: 'Updates',
+              options: ['Regular Updates', 'Important Updates'],
+            ),
+            // Add more widgets as needed
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class NotificationCategoryTile extends StatelessWidget {
+  final String title;
+  final List<String> options;
+
+  NotificationCategoryTile({required this.title, required this.options});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 10),
+        Column(
+          children: options.map((option) {
+            return ListTile(
+              title: Text(option),
+              trailing: Icon(Icons.arrow_forward_ios),
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) {
+                    return NotificationSettingsBottomSheet(
+                      category: option,
+                    );
+                  },
+                );
+              },
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
 }
 
 
